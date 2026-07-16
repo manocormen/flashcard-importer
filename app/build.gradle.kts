@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ktlint)
 }
 
 android {
@@ -32,6 +33,18 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+
+    lint {
+        warningsAsErrors = true
+        // Available dependency updates shouldn't be treated as errors
+        informational += setOf("GradleDependency", "NewerVersionAvailable")
+    }
+}
+
+kotlin {
+    compilerOptions {
+        allWarningsAsErrors.set(true)
     }
 }
 
