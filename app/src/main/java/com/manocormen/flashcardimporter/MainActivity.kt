@@ -18,6 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,6 +47,11 @@ fun ScanScreen(
     onScanClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val scanInstructions =
+        AnnotatedString.fromHtml(
+            stringResource(R.string.scan_instructions),
+        )
+
     Column(
         modifier =
             modifier
@@ -60,7 +67,7 @@ fun ScanScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = stringResource(R.string.scan_instructions),
+            text = scanInstructions,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
         )

@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Flashcard Importer</string>
     <string name="scan_title">Import flashcards</string>
-    <string name="scan_instructions">Scan the QR code shown by the Flashcard Generator to get started.</string>
+    <!-- CDATA ensures HTML tags are preserved rather than filtered as XML. -->
+    <string name="scan_instructions"><![CDATA[Scan the QR code shown by the <a href="https://github.com/manocormen/flashcard-generator">Flashcard Generator</a> to get started.]]></string>
     <string name="scan_button">Scan QR code</string>
 </resources>
