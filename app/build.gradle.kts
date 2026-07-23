@@ -37,8 +37,13 @@ android {
 
     lint {
         warningsAsErrors = true
-        // Available dependency updates shouldn't be treated as errors
-        informational += setOf("GradleDependency", "NewerVersionAvailable")
+        // Available dependency and plugin updates shouldn't be treated as errors
+        informational +=
+            setOf(
+                "AndroidGradlePluginVersion",
+                "GradleDependency",
+                "NewerVersionAvailable",
+            )
     }
 }
 
