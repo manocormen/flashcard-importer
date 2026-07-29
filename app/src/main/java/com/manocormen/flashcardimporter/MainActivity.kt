@@ -59,6 +59,12 @@ class MainActivity : ComponentActivity() {
             val coroutineScope = rememberCoroutineScope()
             val scanFailureMessage = stringResource(R.string.scan_failure)
 
+            fun showScanFailure() {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(scanFailureMessage)
+                }
+            }
+
             BackHandler(scannedContent != null) {
                 scannedContent = null
             }
@@ -79,7 +85,13 @@ class MainActivity : ComponentActivity() {
                                 scanner
                                     .startScan()
                                     .addOnSuccessListener { qrcode ->
-                                        scannedContent = qrcode.rawValue
+                                        val rawValue = qrcode.rawValue
+                                        if (rawValue == null) {
+                                            showScanFailure()
+                                            return@addOnSuccessListener
+                                        }
+
+                                        scannedContent = rawValue
                                     }.addOnFailureListener { exception ->
                                         // TODO: Remove when this is fixed:
                                         // https://issuetracker.google.com/issues/461717098
@@ -87,9 +99,7 @@ class MainActivity : ComponentActivity() {
                                             return@addOnFailureListener
                                         }
 
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar(scanFailureMessage)
-                                        }
+                                        showScanFailure()
                                     }
                             },
                             modifier = Modifier.padding(innerPadding),
