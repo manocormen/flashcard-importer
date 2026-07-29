@@ -14,10 +14,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -28,10 +32,12 @@ import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.google.mlkit.common.MlKitException
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.manocormen.flashcardimporter.ui.theme.FlashcardImporterTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,21 +55,42 @@ class MainActivity : ComponentActivity() {
         setContent {
             var scannedContent by rememberSaveable { mutableStateOf<String?>(null) }
 
+            val snackbarHostState = remember { SnackbarHostState() }
+            val coroutineScope = rememberCoroutineScope()
+            val scanFailureMessage = stringResource(R.string.scan_failure)
+
             BackHandler(scannedContent != null) {
                 scannedContent = null
             }
 
             FlashcardImporterTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    snackbarHost = {
+                        SnackbarHost(hostState = snackbarHostState)
+                    },
+                ) { innerPadding ->
                     // Stabilize mutable value to keep compiler happy (ImportScreen can't take null)
                     val content = scannedContent
 
                     if (content == null) {
                         ScanScreen(
                             onScanClick = {
-                                scanner.startScan().addOnSuccessListener { qrcode ->
-                                    scannedContent = qrcode.rawValue
-                                }
+                                scanner
+                                    .startScan()
+                                    .addOnSuccessListener { qrcode ->
+                                        scannedContent = qrcode.rawValue
+                                    }.addOnFailureListener { exception ->
+                                        // TODO: Remove when this is fixed:
+                                        // https://issuetracker.google.com/issues/461717098
+                                        if (exception is MlKitException && exception.errorCode == MlKitException.INTERNAL) {
+                                            return@addOnFailureListener
+                                        }
+
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(scanFailureMessage)
+                                        }
+                                    }
                             },
                             modifier = Modifier.padding(innerPadding),
                         )
