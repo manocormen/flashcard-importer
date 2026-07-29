@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
                         SnackbarHost(hostState = snackbarHostState)
                     },
                 ) { innerPadding ->
-                    // Stabilize mutable value to keep compiler happy (ImportScreen can't take null)
+                    // Stabilize mutable value for the compiler (ScanResultScreen can't take null)
                     val content = scannedContent
 
                     if (content == null) {
@@ -113,7 +113,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(innerPadding),
                         )
                     } else {
-                        ImportScreen(
+                        ScanResultScreen(
                             scannedContent = content,
                             modifier = Modifier.padding(innerPadding),
                         )
@@ -170,7 +170,7 @@ fun ScanScreenPreview() {
 }
 
 @Composable
-fun ImportScreen(
+fun ScanResultScreen(
     scannedContent: String,
     modifier: Modifier = Modifier,
 ) {
@@ -200,8 +200,8 @@ fun ImportScreen(
 
 @Preview(showBackground = true)
 @Composable
-fun ImportScreenPreview() {
+fun ScanResultScreenPreview() {
     FlashcardImporterTheme {
-        ImportScreen(scannedContent = "http://0.0.0.0:7860/this_is_an_example_endpoint")
+        ScanResultScreen(scannedContent = "http://0.0.0.0:7860/this_is_an_example_endpoint")
     }
 }
