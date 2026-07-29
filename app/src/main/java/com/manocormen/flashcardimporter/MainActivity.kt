@@ -85,6 +85,10 @@ class MainActivity : ComponentActivity() {
                                 scanner
                                     .startScan()
                                     .addOnSuccessListener { qrcode ->
+                                        if (isDestroyed) {
+                                            return@addOnSuccessListener
+                                        }
+
                                         val rawValue = qrcode.rawValue
                                         if (rawValue == null) {
                                             showScanFailure()
@@ -93,6 +97,10 @@ class MainActivity : ComponentActivity() {
 
                                         scannedContent = rawValue
                                     }.addOnFailureListener { exception ->
+                                        if (isDestroyed) {
+                                            return@addOnFailureListener
+                                        }
+
                                         // TODO: Remove when this is fixed:
                                         // https://issuetracker.google.com/issues/461717098
                                         if (exception is MlKitException && exception.errorCode == MlKitException.INTERNAL) {
