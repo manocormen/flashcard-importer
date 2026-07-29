@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
                                         }
 
                                         val rawValue = qrcode.rawValue
-                                        if (rawValue == null) {
+                                        if (rawValue == null || !isValidCardsEndpoint(rawValue)) {
                                             showScanFailure()
                                             return@addOnSuccessListener
                                         }
