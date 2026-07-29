@@ -111,10 +111,11 @@ fun ScanScreen(
     onScanClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val scanInstructionsHtml = stringResource(R.string.scan_instructions)
     val scanInstructions =
-        AnnotatedString.fromHtml(
-            stringResource(R.string.scan_instructions),
-        )
+        remember(scanInstructionsHtml) {
+            AnnotatedString.fromHtml(scanInstructionsHtml)
+        }
 
     Column(
         modifier =
