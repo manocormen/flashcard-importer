@@ -4,6 +4,6 @@
     <!-- CDATA ensures HTML tags are preserved rather than filtered as XML. -->
     <string name="scan_instructions"><![CDATA[Scan the QR code shown by the <a href="https://github.com/manocormen/flashcard-generator">Flashcard Generator</a> to get started.]]></string>
     <string name="scan_button">Scan QR code</string>
-    <string name="scan_result_title">Scanned content</string>
-    <string name="scan_failure">Couldn\'t read a valid QR code. Please try again.</string>
+    <string name="import_card_count">Cards received: %d</string>
+    <string name="import_failure">Couldn\'t import cards. Please try again.</string>
 </resources>
