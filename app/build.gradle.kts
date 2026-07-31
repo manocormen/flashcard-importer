@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.google.code.scanner)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.markdown.renderer.m3)
     implementation(libs.okhttp)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

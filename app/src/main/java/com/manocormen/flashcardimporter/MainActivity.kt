@@ -122,13 +122,15 @@ class MainActivity : ComponentActivity() {
 
                         ImportState.Fetching ->
                             ImportScreen(
-                                cardCount = null,
+                                cards = null,
+                                onDiscard = importViewModel::discardCard,
                                 modifier = Modifier.padding(innerPadding),
                             )
 
                         is ImportState.Success ->
                             ImportScreen(
-                                cardCount = importState.cards.size,
+                                cards = importState.cards,
+                                onDiscard = importViewModel::discardCard,
                                 modifier = Modifier.padding(innerPadding),
                             )
                     }

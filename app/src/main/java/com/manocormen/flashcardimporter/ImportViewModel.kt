@@ -9,13 +9,18 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.io.IOException
 
+class WrappedCard(
+    val id: Int, // Needed for swipe-to-discard
+    val card: BasicCard,
+)
+
 sealed interface ImportState {
     object Initial : ImportState
 
     object Fetching : ImportState
 
     class Success(
-        val cards: List<BasicCard>,
+        val cards: List<WrappedCard>,
     ) : ImportState
 
     object Failure : ImportState
@@ -38,7 +43,10 @@ class ImportViewModel : ViewModel() {
             viewModelScope.launch {
                 state =
                     try {
-                        ImportState.Success(fetchCards(endpoint))
+                        ImportState.Success(
+                            fetchCards(endpoint)
+                                .mapIndexed { index, card -> WrappedCard(index, card) },
+                        )
                     } catch (_: IOException) {
                         ImportState.Failure
                     } catch (_: IllegalArgumentException) {
@@ -46,6 +54,11 @@ class ImportViewModel : ViewModel() {
                         ImportState.Failure
                     }
             }
+    }
+
+    fun discardCard(id: Int) {
+        val currentState = state as ImportState.Success // Stabilize state for compiler
+        state = ImportState.Success(currentState.cards.filterNot { it.id == id })
     }
 
     fun reset() {
