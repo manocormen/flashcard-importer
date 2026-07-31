@@ -1,10 +1,35 @@
 package com.manocormen.flashcardimporter
 
+import kotlinx.coroutines.runBlocking
+import mockwebserver3.MockResponse
+import mockwebserver3.MockWebServer
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ImportCardsTest {
+    @Test
+    fun `fetch cards`() =
+        runBlocking {
+            MockWebServer().use { server ->
+                server.start()
+                server.enqueue(
+                    MockResponse(
+                        body = """{"data":[{"cards":[{"front":"front","back":"back"}]}]}""",
+                    ),
+                )
+
+                assertEquals(
+                    listOf(BasicCard(front = "front", back = "back")),
+                    fetchCards(server.url("/gradio_api/api/cards").toString()),
+                )
+                val request = server.takeRequest()
+                assertEquals("POST", request.method)
+                assertEquals("""{"data":[]}""", request.body?.utf8())
+            }
+        }
+
     @Test
     fun `accept valid cards endpoint`() {
         val urls =
