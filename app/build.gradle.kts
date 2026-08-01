@@ -37,8 +37,13 @@ android {
 
     lint {
         warningsAsErrors = true
-        // Available dependency updates shouldn't be treated as errors
-        informational += setOf("GradleDependency", "NewerVersionAvailable")
+        // Available dependency and plugin updates shouldn't be treated as errors
+        informational +=
+            setOf(
+                "AndroidGradlePluginVersion",
+                "GradleDependency",
+                "NewerVersionAvailable",
+            )
     }
 }
 
@@ -57,6 +62,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.google.code.scanner)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
