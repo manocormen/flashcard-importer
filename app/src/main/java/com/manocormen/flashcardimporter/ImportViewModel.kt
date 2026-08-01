@@ -33,6 +33,8 @@ class ImportViewModel : ViewModel() {
     private var importJob: Job? = null
 
     fun importCards(endpoint: String?) {
+        importJob?.cancel()
+
         if (endpoint == null || !isValidCardsEndpoint(endpoint)) {
             state = ImportState.Failure
             return
