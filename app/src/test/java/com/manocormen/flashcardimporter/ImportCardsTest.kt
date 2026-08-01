@@ -5,8 +5,10 @@ import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.IOException
 
 class ImportCardsTest {
     @Test
@@ -29,6 +31,20 @@ class ImportCardsTest {
                 assertEquals("""{"data":[]}""", request.body?.utf8())
             }
         }
+
+    @Test
+    fun `reject empty card response`() {
+        MockWebServer().use { server ->
+            server.start()
+            server.enqueue(MockResponse(body = """{"data":[]}"""))
+
+            assertThrows(IOException::class.java) {
+                runBlocking {
+                    fetchCards(server.url("/gradio_api/api/cards").toString())
+                }
+            }
+        }
+    }
 
     @Test
     fun `accept valid cards endpoint`() {
