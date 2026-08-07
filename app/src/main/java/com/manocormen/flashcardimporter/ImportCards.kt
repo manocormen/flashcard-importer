@@ -17,6 +17,32 @@ private val client = OkHttpClient()
 private val json = Json { ignoreUnknownKeys = true }
 private val requestBody = """{"data":[]}""".toRequestBody("application/json".toMediaType())
 
+class CardsEndpoint private constructor(
+    val url: String,
+) {
+    companion object {
+        fun validateOrNull(value: String): CardsEndpoint? {
+            val uri =
+                try {
+                    URI(value)
+                } catch (_: URISyntaxException) {
+                    return null
+                }
+
+            if (
+                uri.scheme != "http" ||
+                uri.host == null ||
+                uri.port == -1 ||
+                uri.path != CARDS_ENDPOINT
+            ) {
+                return null
+            }
+
+            return CardsEndpoint(value)
+        }
+    }
+}
+
 @Serializable
 data class BasicCard(
     val front: String,
@@ -33,26 +59,12 @@ private data class GradioResponse(
     val data: List<GeneratedCards?>,
 )
 
-fun isValidCardsEndpoint(value: String): Boolean {
-    val endpoint =
-        try {
-            URI(value)
-        } catch (_: URISyntaxException) {
-            return false
-        }
-
-    return endpoint.scheme == "http" &&
-        endpoint.host != null &&
-        endpoint.port != -1 &&
-        endpoint.path == CARDS_ENDPOINT
-}
-
-suspend fun fetchCards(endpoint: String): List<BasicCard> =
+suspend fun fetchCards(endpoint: CardsEndpoint): List<BasicCard> =
     withContext(Dispatchers.IO) {
         val request =
             Request
                 .Builder()
-                .url(endpoint)
+                .url(endpoint.url)
                 .post(requestBody)
                 .build()
         val body =

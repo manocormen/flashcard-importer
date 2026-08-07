@@ -4,9 +4,9 @@ import kotlinx.coroutines.runBlocking
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.IOException
 
@@ -21,10 +21,16 @@ class ImportCardsTest {
                         body = """{"data":[{"cards":[{"front":"front","back":"back"}]}]}""",
                     ),
                 )
+                val endpoint =
+                    requireNotNull(
+                        CardsEndpoint.validateOrNull(
+                            server.url("/gradio_api/api/cards").toString(),
+                        ),
+                    )
 
                 assertEquals(
                     listOf(BasicCard(front = "front", back = "back")),
-                    fetchCards(server.url("/gradio_api/api/cards").toString()),
+                    fetchCards(endpoint),
                 )
                 val request = server.takeRequest()
                 assertEquals("POST", request.method)
@@ -37,10 +43,16 @@ class ImportCardsTest {
         MockWebServer().use { server ->
             server.start()
             server.enqueue(MockResponse(body = """{"data":[]}"""))
+            val endpoint =
+                requireNotNull(
+                    CardsEndpoint.validateOrNull(
+                        server.url("/gradio_api/api/cards").toString(),
+                    ),
+                )
 
             assertThrows(IOException::class.java) {
                 runBlocking {
-                    fetchCards(server.url("/gradio_api/api/cards").toString())
+                    fetchCards(endpoint)
                 }
             }
         }
@@ -55,9 +67,9 @@ class ImportCardsTest {
             )
 
         for (url in urls) {
-            assertTrue(
+            assertNotNull(
                 "Expected valid URL: $url",
-                isValidCardsEndpoint(url),
+                CardsEndpoint.validateOrNull(url),
             )
         }
     }
@@ -74,9 +86,9 @@ class ImportCardsTest {
             )
 
         for (url in urls) {
-            assertFalse(
+            assertNull(
                 "Expected invalid URL: $url",
-                isValidCardsEndpoint(url),
+                CardsEndpoint.validateOrNull(url),
             )
         }
     }

@@ -36,7 +36,8 @@ class ImportViewModel : ViewModel() {
     fun importCards(endpoint: String?) {
         importJob?.cancel()
 
-        if (endpoint == null || !isValidCardsEndpoint(endpoint)) {
+        val cardsEndpoint = endpoint?.let(CardsEndpoint::validateOrNull)
+        if (cardsEndpoint == null) {
             state = ImportState.Failure
             return
         }
@@ -47,7 +48,7 @@ class ImportViewModel : ViewModel() {
                 val result =
                     try {
                         ImportState.Success(
-                            fetchCards(endpoint)
+                            fetchCards(cardsEndpoint)
                                 .mapIndexed { index, card -> WrappedCard(index, card) },
                         )
                     } catch (_: IOException) {
