@@ -30,6 +30,7 @@ class CardsEndpoint private constructor(
                     return null
                 }
 
+            // TODO: Use https once the generator supports it
             if (
                 uri.scheme != "http" ||
                 uri.host == null ||
