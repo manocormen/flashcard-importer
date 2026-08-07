@@ -46,7 +46,16 @@ class MainActivity : ComponentActivity() {
 
             val snackbarHostState = remember { SnackbarHostState() }
             val coroutineScope = rememberCoroutineScope()
-            val importFailureMessage = stringResource(R.string.import_failure)
+            val importFailureMessage =
+                stringResource(
+                    when ((importState as? ImportState.Failure)?.reason) {
+                        ImportFailureReason.INVALID_ENDPOINT -> R.string.import_failure_invalid_endpoint
+                        ImportFailureReason.CONNECTION_FAILED -> R.string.import_failure_connection_failed
+                        ImportFailureReason.INVALID_RESPONSE -> R.string.import_failure_invalid_response
+                        ImportFailureReason.UNEXPECTED -> R.string.import_failure_unexpected
+                        null -> R.string.import_failure
+                    },
+                )
 
             fun showImportFailure() {
                 importViewModel.reset()
