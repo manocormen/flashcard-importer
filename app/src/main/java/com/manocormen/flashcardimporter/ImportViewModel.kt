@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.IOException
 
@@ -43,7 +44,7 @@ class ImportViewModel : ViewModel() {
         state = ImportState.Fetching
         importJob =
             viewModelScope.launch {
-                state =
+                val result =
                     try {
                         ImportState.Success(
                             fetchCards(endpoint)
@@ -55,12 +56,25 @@ class ImportViewModel : ViewModel() {
                         // For json decoding or endpoint issues
                         ImportState.Failure
                     }
+
+                // A cancelled import (re-scan or reset) must not overwrite newer
+                // state: a request that throws after cancellation would otherwise
+                // reach the catch arms and clobber the current state with Failure.
+                if (isActive) {
+                    state = result
+                }
             }
     }
 
     fun discardCard(id: Int) {
-        val currentState = state as ImportState.Success // Stabilize state for compiler
-        state = ImportState.Success(currentState.cards.filterNot { it.id == id })
+        val currentState = state as? ImportState.Success ?: return
+        val remaining = currentState.cards.filterNot { it.id == id }
+        state =
+            if (remaining.isEmpty()) {
+                ImportState.Initial // Nothing left to review; return to the scan screen
+            } else {
+                ImportState.Success(remaining)
+            }
     }
 
     fun reset() {
