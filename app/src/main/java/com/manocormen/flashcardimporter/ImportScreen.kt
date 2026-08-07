@@ -29,7 +29,7 @@ import com.mikepenz.markdown.m3.Markdown
 @Composable
 fun ImportScreen(
     cards: List<WrappedCard>?,
-    onDiscard: (Int) -> Unit,
+    onDiscard: (CardId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (cards == null) {
@@ -51,7 +51,7 @@ fun ImportScreen(
 @Composable
 private fun CardList(
     cards: List<WrappedCard>,
-    onDiscard: (Int) -> Unit,
+    onDiscard: (CardId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -61,7 +61,7 @@ private fun CardList(
     ) {
         items(
             items = cards,
-            key = { it.id },
+            key = { it.id.value },
         ) { wrappedCard ->
             CardItem(
                 card = wrappedCard.card,
@@ -137,7 +137,7 @@ fun ImportScreenPreview() {
                             - ~~hello~~
                             """.trimIndent(),
                     ),
-                ).mapIndexed { index, card -> WrappedCard(index, card) },
+                ).mapIndexed { index, card -> WrappedCard(CardId(index), card) },
             onDiscard = {},
         )
     }

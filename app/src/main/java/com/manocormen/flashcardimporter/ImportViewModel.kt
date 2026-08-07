@@ -12,8 +12,13 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.SerializationException
 import java.io.IOException
 
+@JvmInline
+value class CardId(
+    val value: Int,
+)
+
 class WrappedCard(
-    val id: Int, // Needed for swipe-to-discard
+    val id: CardId, // Needed for swipe-to-discard
     val card: BasicCard,
 )
 
@@ -60,7 +65,7 @@ class ImportViewModel : ViewModel() {
                     try {
                         ImportState.Success(
                             fetchCards(cardsEndpoint)
-                                .mapIndexed { index, card -> WrappedCard(index, card) },
+                                .mapIndexed { index, card -> WrappedCard(CardId(index), card) },
                         )
                     } catch (exception: CancellationException) {
                         throw exception // To avoid the catch-all below silencing the cancellation
@@ -81,7 +86,7 @@ class ImportViewModel : ViewModel() {
             }
     }
 
-    fun discardCard(id: Int) {
+    fun discardCard(id: CardId) {
         val currentState = state as? ImportState.Success ?: return
         val remaining = currentState.cards.filterNot { it.id == id }
         state =
