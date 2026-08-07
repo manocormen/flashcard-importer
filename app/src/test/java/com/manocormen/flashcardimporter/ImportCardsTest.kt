@@ -63,7 +63,7 @@ class ImportCardsTest {
         val urls =
             listOf(
                 "http://192.168.0.1:7860/gradio_api/api/cards",
-                "http://0.0.0.0:0/gradio_api/api/cards",
+                "http://0.0.0.0:1/gradio_api/api/cards",
             )
 
         for (url in urls) {
@@ -82,6 +82,7 @@ class ImportCardsTest {
                 "INVALID-SCHEME://192.168.0.1:7860/gradio_api/api/cards",
                 "http://:7860/gradio_api/api/cards",
                 "http://192.168.0.1:INVALID-PORT/gradio_api/api/cards",
+                "http://0.0.0.0:0/gradio_api/api/cards",
                 "http://192.168.0.1:7860/INVALID-ENDPOINT",
             )
 

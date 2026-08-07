@@ -32,7 +32,7 @@ class CardsEndpoint private constructor(
             if (
                 uri.scheme != "http" ||
                 uri.host == null ||
-                uri.port == -1 ||
+                uri.port <= 0 ||
                 uri.path != CARDS_ENDPOINT
             ) {
                 return null
