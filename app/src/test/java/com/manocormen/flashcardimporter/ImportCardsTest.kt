@@ -1,6 +1,7 @@
 package com.manocormen.flashcardimporter
 
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.SerializationException
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import org.junit.Assert.assertEquals
@@ -8,7 +9,6 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Test
-import java.io.IOException
 
 class ImportCardsTest {
     @Test
@@ -50,7 +50,7 @@ class ImportCardsTest {
                     ),
                 )
 
-            assertThrows(IOException::class.java) {
+            assertThrows(SerializationException::class.java) {
                 runBlocking {
                     fetchCards(endpoint)
                 }

@@ -98,7 +98,7 @@ class MainActivity : ComponentActivity() {
             }
 
             LaunchedEffect(importState) {
-                if (importState == ImportState.Failure) {
+                if (importState is ImportState.Failure) {
                     showImportFailure()
                 }
             }
@@ -113,7 +113,7 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     when (importState) {
                         ImportState.Initial,
-                        ImportState.Failure,
+                        is ImportState.Failure,
                         ->
                             ScanScreen(
                                 onScanClick = ::scanCards,

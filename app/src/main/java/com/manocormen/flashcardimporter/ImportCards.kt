@@ -3,6 +3,7 @@ package com.manocormen.flashcardimporter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -59,6 +60,10 @@ private data class GradioResponse(
     val data: List<GeneratedCards?>,
 )
 
+/**
+ * @throws IOException if we're unable to fetch cards.
+ * @throws SerializationException if the fetched card data is malformed or missing.
+ */
 suspend fun fetchCards(endpoint: CardsEndpoint): List<BasicCard> =
     withContext(Dispatchers.IO) {
         val request =
@@ -79,5 +84,5 @@ suspend fun fetchCards(endpoint: CardsEndpoint): List<BasicCard> =
             .data
             .firstOrNull()
             ?.cards
-            ?: throw IOException("No flashcards found")
+            ?: throw SerializationException("No cards found")
     }

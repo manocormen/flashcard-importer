@@ -5,15 +5,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.serialization.SerializationException
 import java.io.IOException
 
 class WrappedCard(
     val id: Int, // Needed for swipe-to-discard
     val card: BasicCard,
 )
+
+enum class ImportFailureReason {
+    INVALID_ENDPOINT,
+    CONNECTION_FAILED,
+    INVALID_RESPONSE,
+    UNEXPECTED,
+}
 
 sealed interface ImportState {
     object Initial : ImportState
@@ -24,7 +33,9 @@ sealed interface ImportState {
         val cards: List<WrappedCard>,
     ) : ImportState
 
-    object Failure : ImportState
+    class Failure(
+        val reason: ImportFailureReason,
+    ) : ImportState
 }
 
 class ImportViewModel : ViewModel() {
@@ -38,7 +49,7 @@ class ImportViewModel : ViewModel() {
 
         val cardsEndpoint = endpoint?.let(CardsEndpoint::validateOrNull)
         if (cardsEndpoint == null) {
-            state = ImportState.Failure
+            state = ImportState.Failure(ImportFailureReason.INVALID_ENDPOINT)
             return
         }
 
@@ -51,11 +62,14 @@ class ImportViewModel : ViewModel() {
                             fetchCards(cardsEndpoint)
                                 .mapIndexed { index, card -> WrappedCard(index, card) },
                         )
+                    } catch (exception: CancellationException) {
+                        throw exception // To avoid the catch-all below silencing the cancellation
                     } catch (_: IOException) {
-                        ImportState.Failure
-                    } catch (_: IllegalArgumentException) {
-                        // For json decoding or endpoint issues
-                        ImportState.Failure
+                        ImportState.Failure(ImportFailureReason.CONNECTION_FAILED)
+                    } catch (_: SerializationException) {
+                        ImportState.Failure(ImportFailureReason.INVALID_RESPONSE)
+                    } catch (_: Exception) {
+                        ImportState.Failure(ImportFailureReason.UNEXPECTED)
                     }
 
                 // A cancelled import (re-scan or reset) must not overwrite newer
