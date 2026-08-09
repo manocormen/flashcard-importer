@@ -23,11 +23,13 @@ import com.google.mlkit.common.MlKitException
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
+import com.ichi2.anki.api.AddContentApi
 import com.manocormen.flashcardimporter.ui.theme.FlashcardImporterTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val importViewModel by viewModels<ImportViewModel>()
+    private val exportViewModel by viewModels<ExportViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +45,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val importState = importViewModel.state
+            val exportState = exportViewModel.state
 
             val snackbarHostState = remember { SnackbarHostState() }
             val coroutineScope = rememberCoroutineScope()
@@ -56,12 +59,22 @@ class MainActivity : ComponentActivity() {
                         null -> R.string.import_failure
                     },
                 )
+            val exportFailureMessage = stringResource(R.string.export_failure)
+
+            fun showSnackbar(message: String) {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(message)
+                }
+            }
 
             fun showImportFailure() {
                 importViewModel.reset()
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar(importFailureMessage)
-                }
+                showSnackbar(importFailureMessage)
+            }
+
+            fun showExportFailure() {
+                exportViewModel.reset()
+                showSnackbar(exportFailureMessage)
             }
 
             fun startScan() {
@@ -88,7 +101,7 @@ class MainActivity : ComponentActivity() {
                     }
             }
 
-            val permissionLauncher =
+            val networkPermissionLauncher =
                 rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
                     if (isGranted) {
                         startScan()
@@ -97,10 +110,26 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+            val ankiDroidPermissionLauncher =
+                rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                    if (exportViewModel.state is ExportState.ChoosingDeck) {
+                        if (isGranted) {
+                            exportViewModel.loadDecks(AddContentApi(applicationContext))
+                        } else {
+                            showExportFailure()
+                        }
+                    }
+                }
+
+            fun startExport(cards: List<WrappedCard>) {
+                exportViewModel.startExport(cards.map { it.card })
+                ankiDroidPermissionLauncher.launch(AddContentApi.READ_WRITE_PERMISSION)
+            }
+
             fun scanCards() {
                 // Pre-Cinnamon, this came with the INTERNET permission
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) {
-                    permissionLauncher.launch(Manifest.permission.ACCESS_LOCAL_NETWORK)
+                    networkPermissionLauncher.launch(Manifest.permission.ACCESS_LOCAL_NETWORK)
                 } else {
                     startScan()
                 }
@@ -112,36 +141,56 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            BackHandler(importState != ImportState.Initial) {
-                importViewModel.reset()
+            LaunchedEffect(exportState) {
+                if (exportState == ExportState.Failure) {
+                    showExportFailure()
+                }
+            }
+
+            BackHandler(importState != ImportState.Initial || exportState != null) {
+                if (exportState != null) {
+                    exportViewModel.reset()
+                } else {
+                    importViewModel.reset()
+                }
             }
 
             FlashcardImporterTheme {
                 Scaffold(
                     snackbarHost = { SnackbarHost(snackbarHostState) },
                 ) { innerPadding ->
-                    when (importState) {
-                        ImportState.Initial,
-                        is ImportState.Failure,
-                        ->
-                            ScanScreen(
-                                onScanClick = ::scanCards,
-                                modifier = Modifier.padding(innerPadding),
-                            )
+                    if (exportState is ExportState.ChoosingDeck) {
+                        ExportScreen(
+                            deckList = exportState.deckList,
+                            onDeckSelected = exportViewModel::selectDeck,
+                            modifier = Modifier.padding(innerPadding),
+                        )
+                    } else {
+                        when (importState) {
+                            ImportState.Initial,
+                            is ImportState.Failure,
+                            ->
+                                ScanScreen(
+                                    onScanClick = ::scanCards,
+                                    modifier = Modifier.padding(innerPadding),
+                                )
 
-                        ImportState.Fetching ->
-                            ImportScreen(
-                                cards = null,
-                                onDiscard = importViewModel::discardCard,
-                                modifier = Modifier.padding(innerPadding),
-                            )
+                            ImportState.Fetching ->
+                                ImportScreen(
+                                    cards = null,
+                                    onDiscard = importViewModel::discardCard,
+                                    onExport = {},
+                                    modifier = Modifier.padding(innerPadding),
+                                )
 
-                        is ImportState.Success ->
-                            ImportScreen(
-                                cards = importState.cards,
-                                onDiscard = importViewModel::discardCard,
-                                modifier = Modifier.padding(innerPadding),
-                            )
+                            is ImportState.Success ->
+                                ImportScreen(
+                                    cards = importState.cards,
+                                    onDiscard = importViewModel::discardCard,
+                                    onExport = { startExport(importState.cards) },
+                                    modifier = Modifier.padding(innerPadding),
+                                )
+                        }
                     }
                 }
             }
