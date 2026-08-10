@@ -42,6 +42,7 @@ class MainActivity : ComponentActivity() {
                 .enableAutoZoom()
                 .build()
         val scanner = GmsBarcodeScanning.getClient(this, scannerOptions)
+        val ankiDroidApi = AddContentApi(applicationContext)
 
         setContent {
             val importState = importViewModel.state
@@ -60,6 +61,7 @@ class MainActivity : ComponentActivity() {
                     },
                 )
             val exportFailureMessage = stringResource(R.string.export_failure)
+            val exportSuccessMessage = stringResource(R.string.export_success)
 
             fun showSnackbar(message: String) {
                 coroutineScope.launch {
@@ -75,6 +77,12 @@ class MainActivity : ComponentActivity() {
             fun showExportFailure() {
                 exportViewModel.reset()
                 showSnackbar(exportFailureMessage)
+            }
+
+            fun showExportSuccess() {
+                exportViewModel.reset()
+                importViewModel.reset()
+                showSnackbar(exportSuccessMessage)
             }
 
             fun startScan() {
@@ -114,7 +122,7 @@ class MainActivity : ComponentActivity() {
                 rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
                     if (exportViewModel.state is ExportState.ChoosingDeck) {
                         if (isGranted) {
-                            exportViewModel.loadDecks(AddContentApi(applicationContext))
+                            exportViewModel.loadDecks(ankiDroidApi)
                         } else {
                             showExportFailure()
                         }
@@ -142,16 +150,21 @@ class MainActivity : ComponentActivity() {
             }
 
             LaunchedEffect(exportState) {
-                if (exportState == ExportState.Failure) {
-                    showExportFailure()
+                when (exportState) {
+                    ExportState.Failure -> showExportFailure()
+                    ExportState.Success -> showExportSuccess()
+                    else -> Unit
                 }
             }
 
             BackHandler(importState != ImportState.Initial || exportState != null) {
-                if (exportState != null) {
-                    exportViewModel.reset()
-                } else {
-                    importViewModel.reset()
+                when (exportState) {
+                    is ExportState.ChoosingDeck -> exportViewModel.reset() // Go to cards list
+                    null -> importViewModel.reset() // Go to initial screen
+                    ExportState.PushingCards,
+                    ExportState.Success,
+                    ExportState.Failure,
+                    -> Unit
                 }
             }
 
@@ -159,10 +172,11 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     snackbarHost = { SnackbarHost(snackbarHostState) },
                 ) { innerPadding ->
-                    if (exportState is ExportState.ChoosingDeck) {
+                    if (exportState != null) {
                         ExportScreen(
-                            deckList = exportState.deckList,
+                            deckList = (exportState as? ExportState.ChoosingDeck)?.deckList,
                             onDeckSelected = exportViewModel::selectDeck,
+                            onPush = { exportViewModel.pushCards(ankiDroidApi) },
                             modifier = Modifier.padding(innerPadding),
                         )
                     } else {

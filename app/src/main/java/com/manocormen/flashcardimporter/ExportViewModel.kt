@@ -17,6 +17,10 @@ sealed interface ExportState {
         val deckList: DeckList? = null,
     ) : ExportState
 
+    object PushingCards : ExportState
+
+    object Success : ExportState
+
     object Failure : ExportState
 }
 
@@ -56,6 +60,33 @@ class ExportViewModel : ViewModel() {
         val deckList = export.deckList ?: return
 
         state = export.copy(deckList = deckList.copy(selectedDeckId = id))
+    }
+
+    fun pushCards(api: AddContentApi) {
+        val export = state as? ExportState.ChoosingDeck ?: return
+        val deckList = export.deckList ?: return
+
+        state = ExportState.PushingCards
+        exportJob =
+            viewModelScope.launch {
+                val result =
+                    try {
+                        addCards(
+                            api = api,
+                            deckId = deckList.selectedDeckId,
+                            cards = export.cards,
+                        )
+                        ExportState.Success
+                    } catch (exception: CancellationException) {
+                        throw exception
+                    } catch (_: Exception) {
+                        ExportState.Failure
+                    }
+
+                if (isActive) {
+                    state = result
+                }
+            }
     }
 
     fun reset() {

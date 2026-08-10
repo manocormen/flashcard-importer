@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -26,6 +27,7 @@ import com.manocormen.flashcardimporter.ui.theme.FlashcardImporterTheme
 fun ExportScreen(
     deckList: DeckList?,
     onDeckSelected: (DeckId) -> Unit,
+    onPush: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (deckList == null) {
@@ -70,6 +72,15 @@ fun ExportScreen(
                 )
             }
         }
+
+        item {
+            Button(
+                onClick = onPush,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(text = stringResource(R.string.add_to_ankidroid_button))
+            }
+        }
     }
 }
 
@@ -88,6 +99,7 @@ fun ExportScreenPreview() {
                     selectedDeckId = DeckId(2L),
                 ),
             onDeckSelected = {},
+            onPush = {},
         )
     }
 }
