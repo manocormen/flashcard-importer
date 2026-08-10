@@ -3,8 +3,14 @@ package com.manocormen.flashcardimporter
 import com.ichi2.anki.api.AddContentApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
+import org.intellij.markdown.html.HtmlGenerator
+import org.intellij.markdown.parser.MarkdownParser
 
 private const val BASIC_NOTE_TYPE_NAME = "Flashcard Importer"
+
+private val markdownFlavour = GFMFlavourDescriptor()
+private val markdownParser = MarkdownParser(markdownFlavour)
 
 @JvmInline
 value class DeckId(
@@ -20,6 +26,14 @@ data class DeckList(
     val decks: List<Deck>,
     val selectedDeckId: DeckId,
 )
+
+private fun markdownToHtml(markdown: String): String {
+    val document = markdownParser.buildMarkdownTreeFromString(markdown)
+
+    return HtmlGenerator(markdown, document, markdownFlavour)
+        .generateHtml()
+        .removeSurrounding("<body>", "</body>") // Not needed by AnkiDroid
+}
 
 internal suspend fun fetchDecks(api: AddContentApi): DeckList =
     withContext(Dispatchers.IO) {
@@ -66,7 +80,12 @@ internal suspend fun addCards(
             api.addNotes(
                 noteTypeId,
                 deckId.value,
-                cards.map { card -> arrayOf(card.front, card.back) },
+                cards.map { card ->
+                    arrayOf(
+                        markdownToHtml(card.front),
+                        markdownToHtml(card.back),
+                    )
+                },
                 null,
             )
 
