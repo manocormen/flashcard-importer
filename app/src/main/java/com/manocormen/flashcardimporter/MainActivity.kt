@@ -60,7 +60,14 @@ class MainActivity : ComponentActivity() {
                         null -> R.string.import_failure
                     },
                 )
-            val exportFailureMessage = stringResource(R.string.export_failure)
+            val exportFailureMessage =
+                stringResource(
+                    when ((exportState as? ExportState.Failure)?.reason) {
+                        ExportFailureReason.DECKS_UNAVAILABLE -> R.string.export_failure_decks_unavailable
+                        ExportFailureReason.ADD_CARDS_FAILED -> R.string.export_failure_add_cards
+                        null -> R.string.export_failure
+                    },
+                )
             val exportSuccessMessage = stringResource(R.string.export_success)
 
             fun showSnackbar(message: String) {
@@ -151,7 +158,7 @@ class MainActivity : ComponentActivity() {
 
             LaunchedEffect(exportState) {
                 when (exportState) {
-                    ExportState.Failure -> showExportFailure()
+                    is ExportState.Failure -> showExportFailure()
                     ExportState.Success -> showExportSuccess()
                     else -> Unit
                 }
@@ -163,7 +170,7 @@ class MainActivity : ComponentActivity() {
                     null -> importViewModel.reset() // Go to initial screen
                     ExportState.PushingCards,
                     ExportState.Success,
-                    ExportState.Failure,
+                    is ExportState.Failure,
                     -> Unit
                 }
             }

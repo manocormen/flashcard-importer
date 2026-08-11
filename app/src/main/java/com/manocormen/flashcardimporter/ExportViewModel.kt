@@ -11,6 +11,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
+enum class ExportFailureReason {
+    DECKS_UNAVAILABLE,
+    ADD_CARDS_FAILED,
+}
+
 sealed interface ExportState {
     data class ChoosingDeck(
         val cards: List<BasicCard>,
@@ -21,7 +26,9 @@ sealed interface ExportState {
 
     object Success : ExportState
 
-    object Failure : ExportState
+    class Failure(
+        val reason: ExportFailureReason,
+    ) : ExportState
 }
 
 class ExportViewModel : ViewModel() {
@@ -38,6 +45,7 @@ class ExportViewModel : ViewModel() {
     fun loadDecks(api: AddContentApi) {
         val export = state as? ExportState.ChoosingDeck ?: return
 
+        exportJob?.cancel()
         exportJob =
             viewModelScope.launch {
                 val result =
@@ -46,7 +54,7 @@ class ExportViewModel : ViewModel() {
                     } catch (exception: CancellationException) {
                         throw exception
                     } catch (_: Exception) {
-                        ExportState.Failure
+                        ExportState.Failure(ExportFailureReason.DECKS_UNAVAILABLE)
                     }
 
                 if (isActive) {
@@ -66,6 +74,7 @@ class ExportViewModel : ViewModel() {
         val export = state as? ExportState.ChoosingDeck ?: return
         val deckList = export.deckList ?: return
 
+        exportJob?.cancel()
         state = ExportState.PushingCards
         exportJob =
             viewModelScope.launch {
@@ -80,7 +89,7 @@ class ExportViewModel : ViewModel() {
                     } catch (exception: CancellationException) {
                         throw exception
                     } catch (_: Exception) {
-                        ExportState.Failure
+                        ExportState.Failure(ExportFailureReason.ADD_CARDS_FAILED)
                     }
 
                 if (isActive) {
