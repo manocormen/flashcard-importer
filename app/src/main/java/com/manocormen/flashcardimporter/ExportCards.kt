@@ -27,7 +27,7 @@ data class DeckList(
     val selectedDeckId: DeckId,
 )
 
-private fun markdownToHtml(markdown: String): String {
+internal fun markdownToHtml(markdown: String): String {
     val document = markdownParser.buildMarkdownTreeFromString(markdown)
 
     return HtmlGenerator(markdown, document, markdownFlavour)
