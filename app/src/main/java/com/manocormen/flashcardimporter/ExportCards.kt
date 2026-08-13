@@ -6,11 +6,14 @@ import kotlinx.coroutines.withContext
 import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
 import org.intellij.markdown.html.HtmlGenerator
 import org.intellij.markdown.parser.MarkdownParser
+import org.jsoup.Jsoup
+import org.jsoup.safety.Safelist
 
 private const val BASIC_NOTE_TYPE_NAME = "Flashcard Importer"
 
 private val markdownFlavour = GFMFlavourDescriptor()
 private val markdownParser = MarkdownParser(markdownFlavour)
+private val htmlSafelist = Safelist.relaxed() // Keep common md such as headings
 
 @JvmInline
 value class DeckId(
@@ -30,9 +33,12 @@ data class DeckList(
 internal fun markdownToHtml(markdown: String): String {
     val document = markdownParser.buildMarkdownTreeFromString(markdown)
 
-    return HtmlGenerator(markdown, document, markdownFlavour)
-        .generateHtml()
-        .removeSurrounding("<body>", "</body>") // Not needed by AnkiDroid
+    val html =
+        HtmlGenerator(markdown, document, markdownFlavour)
+            .generateHtml()
+            .removeSurrounding("<body>", "</body>") // Not needed by AnkiDroid
+
+    return Jsoup.clean(html, htmlSafelist).trimEnd()
 }
 
 internal suspend fun fetchDecks(api: AddContentApi): DeckList =

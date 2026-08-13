@@ -14,7 +14,13 @@ class ExportCardsTest {
             """.trimIndent()
 
         assertEquals(
-            "<ul><li>hello</li><li><strong>there</strong></li><li><code>2 &lt; 3</code></li></ul>",
+            """
+            <ul>
+             <li>hello</li>
+             <li><strong>there</strong></li>
+             <li><code>2 &lt; 3</code></li>
+            </ul>
+            """.trimIndent(),
             markdownToHtml(markdown),
         )
     }
@@ -29,8 +35,18 @@ class ExportCardsTest {
             """.trimIndent()
 
         assertEquals(
-            "<p>First paragraph.</p><p>Second paragraph.</p>",
+            """
+            <p>First paragraph.</p>
+            <p>Second paragraph.</p>
+            """.trimIndent(),
             markdownToHtml(markdown),
         )
+    }
+
+    @Test
+    fun `sanitize raw HTML`() {
+        val markdown = "<script>alert('Hello, there!')</script>"
+
+        assertEquals("", markdownToHtml(markdown))
     }
 }
