@@ -65,6 +65,7 @@ class MainActivity : ComponentActivity() {
                     when ((exportState as? ExportState.Failure)?.reason) {
                         ExportFailureReason.DECKS_UNAVAILABLE -> R.string.export_failure_decks_unavailable
                         ExportFailureReason.ADD_CARDS_FAILED -> R.string.export_failure_add_cards
+                        ExportFailureReason.PARTIAL_ADD -> R.string.export_failure_partial_add
                         null -> R.string.export_failure
                     },
                 )

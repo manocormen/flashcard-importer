@@ -65,7 +65,7 @@ internal suspend fun addCards(
     api: AddContentApi,
     deckId: DeckId,
     cards: List<BasicCard>,
-): Unit =
+): Int =
     withContext(Dispatchers.IO) {
         val noteTypes = checkNotNull(api.getModelList())
 
@@ -82,18 +82,15 @@ internal suspend fun addCards(
                 existingNoteTypeId
             }
 
-        val addedCardCount =
-            api.addNotes(
-                noteTypeId,
-                deckId.value,
-                cards.map { card ->
-                    arrayOf(
-                        markdownToHtml(card.front),
-                        markdownToHtml(card.back),
-                    )
-                },
-                null,
-            )
-
-        check(addedCardCount == cards.size) // Success only if all cards are added
+        api.addNotes(
+            noteTypeId,
+            deckId.value,
+            cards.map { card ->
+                arrayOf(
+                    markdownToHtml(card.front),
+                    markdownToHtml(card.back),
+                )
+            },
+            null,
+        )
     }

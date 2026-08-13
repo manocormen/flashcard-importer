@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 enum class ExportFailureReason {
     DECKS_UNAVAILABLE,
     ADD_CARDS_FAILED,
+    PARTIAL_ADD,
 }
 
 sealed interface ExportState {
@@ -80,12 +81,18 @@ class ExportViewModel : ViewModel() {
             viewModelScope.launch {
                 val result =
                     try {
-                        addCards(
-                            api = api,
-                            deckId = deckList.selectedDeckId,
-                            cards = export.cards,
-                        )
-                        ExportState.Success
+                        val addedCardCount =
+                            addCards(
+                                api = api,
+                                deckId = deckList.selectedDeckId,
+                                cards = export.cards,
+                            )
+
+                        when (addedCardCount) {
+                            export.cards.size -> ExportState.Success
+                            in 1 until export.cards.size -> ExportState.Failure(ExportFailureReason.PARTIAL_ADD)
+                            else -> ExportState.Failure(ExportFailureReason.ADD_CARDS_FAILED)
+                        }
                     } catch (exception: CancellationException) {
                         throw exception
                     } catch (_: Exception) {
