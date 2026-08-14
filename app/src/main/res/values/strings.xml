@@ -7,6 +7,8 @@
     <string name="discard_card">Discard</string>
     <string name="add_to_ankidroid_button">Add to AnkiDroid</string>
     <string name="ankidroid_unavailable">AnkiDroid isn\'t available.</string>
+    <string name="ankidroid_permission_denied">AnkiDroid access was denied.</string>
+    <string name="ankidroid_permission_blocked">AnkiDroid access is blocked. Allow it in Settings to add cards.</string>
     <string name="export_title">Choose a deck</string>
     <string name="export_success">Cards added to AnkiDroid.</string>
     <string name="export_failure">Couldn\'t access AnkiDroid.</string>

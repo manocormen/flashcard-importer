@@ -71,6 +71,8 @@ class MainActivity : ComponentActivity() {
                 )
             val exportSuccessMessage = stringResource(R.string.export_success)
             val ankiDroidUnavailableMessage = stringResource(R.string.ankidroid_unavailable)
+            val ankiDroidPermissionDeniedMessage = stringResource(R.string.ankidroid_permission_denied)
+            val ankiDroidPermissionBlockedMessage = stringResource(R.string.ankidroid_permission_blocked)
 
             fun showSnackbar(message: String) {
                 coroutineScope.launch {
@@ -83,9 +85,9 @@ class MainActivity : ComponentActivity() {
                 showSnackbar(importFailureMessage)
             }
 
-            fun showExportFailure() {
+            fun showExportFailure(message: String = exportFailureMessage) {
                 exportViewModel.reset()
-                showSnackbar(exportFailureMessage)
+                showSnackbar(message)
             }
 
             fun showExportSuccess() {
@@ -133,7 +135,13 @@ class MainActivity : ComponentActivity() {
                         if (isGranted) {
                             exportViewModel.loadDecks(ankiDroidApi)
                         } else {
-                            showExportFailure()
+                            val message =
+                                if (shouldShowRequestPermissionRationale(AddContentApi.READ_WRITE_PERMISSION)) {
+                                    ankiDroidPermissionDeniedMessage
+                                } else {
+                                    ankiDroidPermissionBlockedMessage
+                                }
+                            showExportFailure(message)
                         }
                     }
                 }
