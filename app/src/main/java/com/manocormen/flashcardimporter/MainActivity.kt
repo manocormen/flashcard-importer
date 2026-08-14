@@ -70,6 +70,7 @@ class MainActivity : ComponentActivity() {
                     },
                 )
             val exportSuccessMessage = stringResource(R.string.export_success)
+            val ankiDroidUnavailableMessage = stringResource(R.string.ankidroid_unavailable)
 
             fun showSnackbar(message: String) {
                 coroutineScope.launch {
@@ -138,6 +139,11 @@ class MainActivity : ComponentActivity() {
                 }
 
             fun startExport(cards: List<WrappedCard>) {
+                if (AddContentApi.getAnkiDroidPackageName(applicationContext) == null) {
+                    showSnackbar(ankiDroidUnavailableMessage)
+                    return
+                }
+
                 exportViewModel.startExport(cards.map { it.card })
                 ankiDroidPermissionLauncher.launch(AddContentApi.READ_WRITE_PERMISSION)
             }
