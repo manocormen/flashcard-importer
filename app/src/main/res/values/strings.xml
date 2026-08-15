@@ -5,7 +5,17 @@
     <string name="scan_instructions"><![CDATA[Scan the QR code shown by the <a href="https://github.com/manocormen/flashcard-generator">Flashcard Generator</a> to get started.]]></string>
     <string name="scan_button">Scan QR code</string>
     <string name="discard_card">Discard</string>
-    <string name="import_failure">Couldn\'t import cards. Please try again.</string>
+    <string name="add_to_ankidroid_button">Add to AnkiDroid</string>
+    <string name="ankidroid_unavailable">AnkiDroid isn\'t available.</string>
+    <string name="ankidroid_permission_denied">AnkiDroid access was denied.</string>
+    <string name="ankidroid_permission_blocked">AnkiDroid access is blocked. Allow it in Settings to add cards.</string>
+    <string name="export_title">Choose a deck</string>
+    <string name="export_success">Cards added to AnkiDroid.</string>
+    <string name="export_failure">Couldn\'t access AnkiDroid.</string>
+    <string name="export_failure_decks_unavailable">Couldn\'t load your AnkiDroid decks.</string>
+    <string name="export_failure_add_cards">Couldn\'t add cards to AnkiDroid.</string>
+    <string name="export_failure_partial_add">Some cards were added. Check AnkiDroid before trying again.</string>
+    <string name="import_failure">Couldn\'t import cards.</string>
     <string name="import_failure_invalid_endpoint">The QR doesn\'t contain a valid card-sharing link.</string>
     <string name="import_failure_connection_failed">Couldn\'t reach the Flashcard Generator.</string>
     <string name="import_failure_invalid_response">Couldn\'t read the cards returned by the Flashcard Generator.</string>

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +31,7 @@ import com.mikepenz.markdown.m3.Markdown
 fun ImportScreen(
     cards: List<WrappedCard>?,
     onDiscard: (CardId) -> Unit,
+    onExport: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (cards == null) {
@@ -43,6 +45,7 @@ fun ImportScreen(
         CardList(
             cards = cards,
             onDiscard = onDiscard,
+            onExport = onExport,
             modifier = modifier,
         )
     }
@@ -52,6 +55,7 @@ fun ImportScreen(
 private fun CardList(
     cards: List<WrappedCard>,
     onDiscard: (CardId) -> Unit,
+    onExport: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -68,6 +72,20 @@ private fun CardList(
                 onDiscard = { onDiscard(wrappedCard.id) },
                 modifier = Modifier.fillMaxWidth(),
             )
+        }
+
+        if (cards.isNotEmpty()) {
+            item {
+                Button(
+                    onClick = onExport,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp),
+                ) {
+                    Text(text = stringResource(R.string.add_to_ankidroid_button))
+                }
+            }
         }
     }
 }
@@ -139,6 +157,7 @@ fun ImportScreenPreview() {
                     ),
                 ).mapIndexed { index, card -> WrappedCard(CardId(index), card) },
             onDiscard = {},
+            onExport = {},
         )
     }
 }
