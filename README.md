@@ -28,7 +28,7 @@ For now, the app must be built and installed from source.
 
 ## Demo
 
-TODO: Add video demo.
+https://github.com/user-attachments/assets/af0783f9-b933-46f7-8df8-b156a2b4a5ab
 
 ## Constraints
 
@@ -56,7 +56,7 @@ The Gradle wrapper provides useful development commands. Here's a selection:
 
 The app is structured as a pipeline with the following components:
 
-TODO: Add pipeline image.
+<img width="1856" height="346" alt="flashcard-importer-pipeline" src="https://github.com/user-attachments/assets/864c4747-7ce4-4638-9cae-878cc2390712" />
 
 ## Structure
 
